@@ -177,24 +177,24 @@ public class LeastLoadBalancer extends LoadBalancer {
 			if(ec1 == ec2) {
 				return 0;
 			}
-			
+
 			Computer com1 = ec1.computer;
 			Computer com2 = ec2.computer;
 			
-			if(isIdle(com1) && !isIdle(com2)) {
+			if(isIdle(com1, ec1) && !isIdle(com2, ec2)) {
 				return 1;
-			} else if (isIdle(com2) && !isIdle(com1)) {
+			} else if (isIdle(com2, ec2) && !isIdle(com1, ec1)) {
 				return -1;
 			} else {
-				return com1.countIdle() - com2.countIdle();
+				return ec1.size() - ec2.size();
 			}
 			
 		}
 		
 		// Can't use computer.isIdle() as it can return false when assigned
 		// a multi-configuration job even though no executors are being used
-		private boolean isIdle(Computer computer) {
-			return computer.countExecutors() - computer.countIdle() == 0 ? true : false; 
+		private boolean isIdle(Computer computer, ExecutorChunk ec) {
+			return computer.countExecutors() - ec.size() == 0 ? true : false;
 		}
 		
 	}

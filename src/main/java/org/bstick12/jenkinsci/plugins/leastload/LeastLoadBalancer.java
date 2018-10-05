@@ -60,6 +60,8 @@ public class LeastLoadBalancer extends LoadBalancer {
 
     private static final Comparator<ExecutorChunk> EXECUTOR_CHUNK_COMPARATOR = Collections.reverseOrder(new ExecutorChunkComparator());
 
+    private static final Map<String, Date> LAST_ASSIGNED_TIME = new HashMap<String, Date>();
+
     private final LoadBalancer fallback;
 
     /**
@@ -75,28 +77,23 @@ public class LeastLoadBalancer extends LoadBalancer {
 
     @Override
     public Mapping map(Task task, MappingWorksheet ws) {
-
         try {
-
-            if (!isDisabled(task)) {
-
-                List<ExecutorChunk> useableChunks = getApplicableSortedByLoad(ws);
-                Mapping m = ws.new Mapping();
-                if (assignGreedily(m, useableChunks, 0)) {
-                    assert m.isCompletelyValid();
-                    return m;
-                } else {
-                    LOGGER.log(FINE, "Least load balancer was unable to define mapping. Falling back to double check");
-                    return getFallBackLoadBalancer().map(task, ws);
-                }
-
-            } else {
+            if (isDisabled(task)) {
                 return getFallBackLoadBalancer().map(task, ws);
             }
 
+            List<ExecutorChunk> useableChunks = getApplicableSortedByLoad(ws);
+            Mapping m = ws.new Mapping();
+            if (assignGreedily(m, useableChunks, 0)) {
+                assert m.isCompletelyValid();
+                return saveAssignedTimes(m);
+            } else {
+                LOGGER.log(FINE, "Least load balancer was unable to define mapping. Falling back to double check");
+                return saveAssignedTimes(getFallBackLoadBalancer().map(task, ws));
+            }
         } catch (Exception e) {
             LOGGER.log(WARNING, "Least load balancer failed will use fallback", e);
-            return getFallBackLoadBalancer().map(task, ws);
+            return saveAssignedTimes(getFallBackLoadBalancer().map(task, ws));
         }
     }
 
@@ -107,7 +104,6 @@ public class LeastLoadBalancer extends LoadBalancer {
      * @return -A list of ExecutorChunk in least loaded order
      */
     private List<ExecutorChunk> getApplicableSortedByLoad(MappingWorksheet ws) {
-
         List<ExecutorChunk> chunks = new ArrayList<ExecutorChunk>();
         for (int i = 0; i < ws.works.size(); i++) {
             for (ExecutorChunk ec : ws.works(i).applicableExecutorChunks()) {
@@ -117,7 +113,15 @@ public class LeastLoadBalancer extends LoadBalancer {
         Collections.shuffle(chunks); // See JENKINS-18323
         Collections.sort(chunks, EXECUTOR_CHUNK_COMPARATOR);
         return chunks;
+    }
 
+    private Mapping saveAssignedTimes(Mapping mapping) {
+        Date now = new Date();
+        for (int i = 0; i < mapping.size(); i++) {
+            LAST_ASSIGNED_TIME.put(mapping.assigned(i).computer.getName(), now);
+        }
+
+        return mapping;
     }
 
     @SuppressWarnings("rawtypes")
@@ -169,24 +173,23 @@ public class LeastLoadBalancer extends LoadBalancer {
     }
 
     protected static class ExecutorChunkComparator implements Comparator<ExecutorChunk>, Serializable {
-
         public int compare(ExecutorChunk ec1, ExecutorChunk ec2) {
-
             if (ec1 == ec2) {
                 return 0;
             }
 
             Computer com1 = ec1.computer;
+            Date used1 = LAST_ASSIGNED_TIME.get(com1.getName());
+
             Computer com2 = ec2.computer;
+            Date used2 = LAST_ASSIGNED_TIME.get(com2.getName());
 
-            if (isIdle(com1) && !isIdle(com2)) {
-                return 1;
-            } else if (isIdle(com2) && !isIdle(com1)) {
-                return -1;
-            } else {
-                return com1.countIdle() - com2.countIdle();
-            }
+            if (!used1) return -1;
+            if (!used2) return 1;
 
+            if (used1.before(used2)) return -1;
+            if (used2.before(used1)) return 1;
+            return 0;
         }
 
         // Can't use computer.isIdle() as it can return false when assigned

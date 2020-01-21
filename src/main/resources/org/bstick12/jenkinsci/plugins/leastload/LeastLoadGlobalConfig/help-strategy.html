@@ -1,0 +1,19 @@
+<div>
+    Specify the default strategy the plugin should use when selecting an executor.
+    <ul>
+        <li>
+            <b>Prefer Idle</b> (default) -
+            Prefer machines that are totally idle, or if none, the machine
+            with the most idle executors available.
+        </li>
+        <li>
+            <b>Round Robin</b> -
+            Prefer machines that have gone the longest without being assigned
+            a job, ensuring that all machines are assigned jobs when possible.
+        </li>
+        <li>
+            <b>Disabled</b> -
+            Disable the plugin and fall back to the default Jenkins load balancer.
+        </li>
+    </ul>
+</div>

@@ -1,0 +1,23 @@
+<div>
+    Specify a strategy the plugin should use when selecting an executor for <i>this job only</i>.
+    <ul>
+        <li>
+            <b>Use Global</b> -
+            Use the strategy selected in your Jenkins global configuration.
+        </li>
+        <li>
+            <b>Prefer Idle</b> -
+            Prefer machines that are totally idle, or if none, the machine
+            with the most idle executors available.
+        </li>
+        <li>
+            <b>Round Robin</b> -
+            Prefer machines that have gone the longest without being assigned
+            a job, ensuring that all machines are assigned jobs when possible.
+        </li>
+        <li>
+            <b>Disabled</b> -
+            Disable the plugin and fall back to the default Jenkins load balancer.
+        </li>
+    </ul>
+</div>

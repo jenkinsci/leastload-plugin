@@ -110,9 +110,7 @@ public class LeastLoadBalancer extends LoadBalancer {
 
         List<ExecutorChunk> chunks = new ArrayList<>();
         for (int i = 0; i < ws.works.size(); i++) {
-            for (ExecutorChunk ec : ws.works(i).applicableExecutorChunks()) {
-                chunks.add(ec);
-            }
+            chunks.addAll(ws.works(i).applicableExecutorChunks());
         }
         Collections.shuffle(chunks); // See JENKINS-18323
         chunks.sort(EXECUTOR_CHUNK_COMPARATOR);

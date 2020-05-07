@@ -1,9 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>3.4</version>
+		<version>4.1</version>
 	</parent>
 
 	<artifactId>leastload</artifactId>
@@ -12,7 +13,7 @@
 
 	<name>Least Load plugin</name>
 	<description>Changes Jenkins to use a LoadBalancer that prefers least loaded nodes</description>
-	<url>http://wiki.jenkins-ci.org/display/JENKINS/Least+Load+Plugin</url>
+	<url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
 
 	<developers>
 		<developer>
@@ -24,15 +25,15 @@
 
 	<licenses>
 		<license>
-			<name>MIT license</name>
-			<url>http://www.opensource.org/licenses/mit-license.php</url>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
 		</license>
 	</licenses>
 
 	<scm>
-		<connection>scm:git:ssh://github.com/jenkinsci/leastload-plugin.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com/jenkinsci/leastload-plugin.git</developerConnection>
-		<url>https://github.com/jenkinsci/leastload-plugin</url>
+		<connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+		<developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+		<url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
 	  <tag>HEAD</tag>
   </scm>
 
@@ -51,15 +52,15 @@
 	</pluginRepositories>
 
 	<properties>
-		<jenkins.version>2.89.3</jenkins.version>
-		<java.level>7</java.level>
+		<jenkins.version>2.164.3</jenkins.version>
+		<java.level>8</java.level>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>2.10.0</version>
+			<version>3.3.3</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

@@ -108,7 +108,7 @@ public class LeastLoadBalancer extends LoadBalancer {
      */
     private List<ExecutorChunk> getApplicableSortedByLoad(MappingWorksheet ws) {
 
-        List<ExecutorChunk> chunks = new ArrayList<ExecutorChunk>();
+        List<ExecutorChunk> chunks = new ArrayList<>();
         for (int i = 0; i < ws.works.size(); i++) {
             for (ExecutorChunk ec : ws.works(i).applicableExecutorChunks()) {
                 chunks.add(ec);

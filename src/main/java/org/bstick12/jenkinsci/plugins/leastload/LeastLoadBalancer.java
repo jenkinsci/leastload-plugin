@@ -191,7 +191,7 @@ public class LeastLoadBalancer extends LoadBalancer {
         // Can't use computer.isIdle() as it can return false when assigned
         // a multi-configuration job even though no executors are being used
         private boolean isIdle(Computer computer) {
-            return computer.countExecutors() - computer.countIdle() == 0 ? true : false;
+            return computer.countExecutors() - computer.countIdle() == 0;
         }
 
     }

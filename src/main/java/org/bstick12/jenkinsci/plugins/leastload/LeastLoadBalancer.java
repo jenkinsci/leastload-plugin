@@ -66,7 +66,7 @@ public class LeastLoadBalancer extends LoadBalancer {
      * Create the {@link LeastLoadBalancer} with a fallback that will be
      * used in case of any failures.
      *
-     * @param fallback The LoadBalancer fallback to use in case of failure
+     * @param fallback The {@link LoadBalancer} fallback to use in case of failure
      */
     public LeastLoadBalancer(LoadBalancer fallback) {
         Preconditions.checkNotNull(fallback, "You must provide a fallback implementation of the LoadBalancer");
@@ -159,7 +159,7 @@ public class LeastLoadBalancer extends LoadBalancer {
     /**
      * Retrieves the fallback {@link LoadBalancer}
      *
-     * @return - fallback LoadBalancer
+     * @return - fallback {@link LoadBalancer}
      */
     public LoadBalancer getFallBackLoadBalancer() {
         return fallback;

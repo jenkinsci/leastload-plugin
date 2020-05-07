@@ -115,7 +115,7 @@ public class LeastLoadBalancer extends LoadBalancer {
             }
         }
         Collections.shuffle(chunks); // See JENKINS-18323
-        Collections.sort(chunks, EXECUTOR_CHUNK_COMPARATOR);
+        chunks.sort(EXECUTOR_CHUNK_COMPARATOR);
         return chunks;
 
     }

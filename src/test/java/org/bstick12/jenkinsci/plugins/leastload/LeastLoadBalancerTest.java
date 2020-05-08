@@ -57,6 +57,7 @@ public class LeastLoadBalancerTest {
 		assertEquals(mockFallback, llb.getFallBackLoadBalancer());
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testFallbackOnFailure() {
 		LeastLoadBalancer llb = new LeastLoadBalancer(mockFallback);
@@ -66,6 +67,7 @@ public class LeastLoadBalancerTest {
 		Mockito.verify(mockFallback).map(mockAbstractProject, mockMappingWorksheet);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testFallbackOnPropertyDisable() {
 		

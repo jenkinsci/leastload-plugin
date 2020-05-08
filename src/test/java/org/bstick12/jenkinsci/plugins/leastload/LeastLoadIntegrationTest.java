@@ -14,6 +14,7 @@ import hudson.slaves.RetentionStrategy;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 
@@ -26,6 +27,8 @@ public class LeastLoadIntegrationTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
+    @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Before
     public void before() throws Exception {
         new LeastLoadPlugin().start();
@@ -34,7 +37,10 @@ public class LeastLoadIntegrationTest {
     @Test
     public void smokes() throws Exception {
         DumbSlave agent1 =
-                new DumbSlave("agent0", j.createTmpDir().getPath(), j.createComputerLauncher(null));
+                new DumbSlave(
+                        "agent0",
+                        temporaryFolder.newFolder().getPath(),
+                        j.createComputerLauncher(null));
         agent1.setLabelString("leastload");
         agent1.setNumExecutors(4);
         agent1.setRetentionStrategy(RetentionStrategy.NOOP);
@@ -42,7 +48,10 @@ public class LeastLoadIntegrationTest {
         j.waitOnline(agent1);
 
         DumbSlave agent2 =
-                new DumbSlave("agent1", j.createTmpDir().getPath(), j.createComputerLauncher(null));
+                new DumbSlave(
+                        "agent1",
+                        temporaryFolder.newFolder().getPath(),
+                        j.createComputerLauncher(null));
         agent2.setLabelString("leastload");
         agent2.setNumExecutors(4);
         agent2.setRetentionStrategy(RetentionStrategy.NOOP);

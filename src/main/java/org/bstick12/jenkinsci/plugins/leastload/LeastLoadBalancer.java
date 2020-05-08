@@ -81,6 +81,7 @@ public class LeastLoadBalancer extends LoadBalancer {
             if (!isDisabled(task)) {
 
                 List<ExecutorChunk> useableChunks = getApplicableSortedByLoad(ws);
+                // do a greedy assignment
                 Mapping m = ws.new Mapping();
                 if (assignGreedily(m, useableChunks, 0)) {
                     assert m.isCompletelyValid();
@@ -139,17 +140,23 @@ public class LeastLoadBalancer extends LoadBalancer {
 
     private boolean assignGreedily(Mapping m, List<ExecutorChunk> executors, int i) {
 
+        // fully assigned
         if (m.size() == i) {
             return true;
         }
 
         for (ExecutorChunk ec : executors) {
+            // let's attempt this assignment
             m.assign(i, ec);
             if (m.isPartiallyValid() && assignGreedily(m, executors, i + 1)) {
+                // successful greedily allocation
                 return true;
             }
+
+            // otherwise 'ec' wasn't a good fit for us. try next.
         }
 
+        // every attempt failed
         m.assign(i, null);
         return false;
 

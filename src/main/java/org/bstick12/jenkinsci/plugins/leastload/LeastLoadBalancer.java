@@ -66,7 +66,7 @@ public class LeastLoadBalancer extends LoadBalancer {
      * Create the {@link LeastLoadBalancer} with a fallback that will be
      * used in case of any failures.
      *
-     * @param fallback The LoadBalancer fallback to use in case of failure
+     * @param fallback The {@link LoadBalancer} fallback to use in case of failure
      */
     public LeastLoadBalancer(LoadBalancer fallback) {
         Preconditions.checkNotNull(fallback, "You must provide a fallback implementation of the LoadBalancer");
@@ -81,6 +81,7 @@ public class LeastLoadBalancer extends LoadBalancer {
             if (!isDisabled(task)) {
 
                 List<ExecutorChunk> useableChunks = getApplicableSortedByLoad(ws);
+                // do a greedy assignment
                 Mapping m = ws.new Mapping();
                 if (assignGreedily(m, useableChunks, 0)) {
                     assert m.isCompletelyValid();
@@ -108,27 +109,23 @@ public class LeastLoadBalancer extends LoadBalancer {
      */
     private List<ExecutorChunk> getApplicableSortedByLoad(MappingWorksheet ws) {
 
-        List<ExecutorChunk> chunks = new ArrayList<ExecutorChunk>();
+        List<ExecutorChunk> chunks = new ArrayList<>();
         for (int i = 0; i < ws.works.size(); i++) {
-            for (ExecutorChunk ec : ws.works(i).applicableExecutorChunks()) {
-                chunks.add(ec);
-            }
+            chunks.addAll(ws.works(i).applicableExecutorChunks());
         }
         Collections.shuffle(chunks); // See JENKINS-18323
-        Collections.sort(chunks, EXECUTOR_CHUNK_COMPARATOR);
+        chunks.sort(EXECUTOR_CHUNK_COMPARATOR);
         return chunks;
 
     }
 
-    @SuppressWarnings("rawtypes")
     private boolean isDisabled(Task task) {
 
         SubTask subTask = task.getOwnerTask();
 
         if (subTask instanceof Job) {
-            Job job = (Job) subTask;
-            @SuppressWarnings("unchecked")
-            LeastLoadDisabledProperty property = (LeastLoadDisabledProperty) job.getProperty(LeastLoadDisabledProperty.class);
+            Job<?, ?> job = (Job<?, ?>) subTask;
+            LeastLoadDisabledProperty property = job.getProperty(LeastLoadDisabledProperty.class);
             // If the job configuration hasn't been saved after installing the plugin, the property will be null. Assume
             // that the user wants to enable functionality by default.
             if (property != null) {
@@ -143,17 +140,23 @@ public class LeastLoadBalancer extends LoadBalancer {
 
     private boolean assignGreedily(Mapping m, List<ExecutorChunk> executors, int i) {
 
+        // fully assigned
         if (m.size() == i) {
             return true;
         }
 
         for (ExecutorChunk ec : executors) {
+            // let's attempt this assignment
             m.assign(i, ec);
             if (m.isPartiallyValid() && assignGreedily(m, executors, i + 1)) {
+                // successful greedily allocation
                 return true;
             }
+
+            // otherwise 'ec' wasn't a good fit for us. try next.
         }
 
+        // every attempt failed
         m.assign(i, null);
         return false;
 
@@ -162,7 +165,7 @@ public class LeastLoadBalancer extends LoadBalancer {
     /**
      * Retrieves the fallback {@link LoadBalancer}
      *
-     * @return - fallback LoadBalancer
+     * @return - fallback {@link LoadBalancer}
      */
     public LoadBalancer getFallBackLoadBalancer() {
         return fallback;
@@ -192,7 +195,7 @@ public class LeastLoadBalancer extends LoadBalancer {
         // Can't use computer.isIdle() as it can return false when assigned
         // a multi-configuration job even though no executors are being used
         private boolean isIdle(Computer computer) {
-            return computer.countExecutors() - computer.countIdle() == 0 ? true : false;
+            return computer.countBusy() == 0;
         }
 
     }

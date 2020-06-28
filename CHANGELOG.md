@@ -1,6 +1,6 @@
 ## Changelog
 
-### 2.1.0
+### 3.0.0
 
 - Internal: Update parent POM, simplify code using new methods from recent versions of Jenkins core, replace usages of deprecated APIs, add tests
 

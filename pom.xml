@@ -8,7 +8,7 @@
 	</parent>
 
 	<artifactId>leastload</artifactId>
-	<version>3.0.0-SNAPSHOT</version>
+	<version>3.0.0</version>
 	<packaging>hpi</packaging>
 
 	<name>Least Load plugin</name>
@@ -34,7 +34,7 @@
 		<connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
 		<url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-	  <tag>HEAD</tag>
+	  <tag>leastload-3.0.0</tag>
   </scm>
 
 	<repositories>

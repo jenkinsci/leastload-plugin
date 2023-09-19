@@ -33,6 +33,8 @@ import hudson.model.queue.MappingWorksheet;
 import hudson.model.queue.MappingWorksheet.ExecutorChunk;
 import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.model.queue.SubTask;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -57,6 +59,9 @@ import static java.util.logging.Level.WARNING;
 public class LeastLoadBalancer extends LoadBalancer {
 
     private static final Logger LOGGER = Logger.getLogger(LeastLoadBalancer.class.getCanonicalName());
+
+    @Restricted(NoExternalUse.class)
+    public static boolean USE_PERCENT_LOAD = false;
 
     private static final Comparator<ExecutorChunk> EXECUTOR_CHUNK_COMPARATOR = Collections.reverseOrder(new ExecutorChunkComparator());
 
@@ -187,9 +192,15 @@ public class LeastLoadBalancer extends LoadBalancer {
             } else if (isIdle(com2) && !isIdle(com1)) {
                 return -1;
             } else {
-                return com1.countIdle() - com2.countIdle();
+                return USE_PERCENT_LOAD ? comparePercent(com1, com2) : com1.countIdle() - com2.countIdle();
             }
 
+        }
+
+        private int comparePercent(Computer com1, Computer com2){
+            float perc1 = (float) com1.countIdle() / com1.countExecutors();
+            float perc2 = (float) com2.countIdle() / com2.countExecutors();
+            return (perc1 - perc2) < 0 ? -1 : 1;
         }
 
         // Can't use computer.isIdle() as it can return false when assigned

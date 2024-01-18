@@ -61,7 +61,7 @@ public class LeastLoadBalancer extends LoadBalancer {
     private static final Logger LOGGER = Logger.getLogger(LeastLoadBalancer.class.getCanonicalName());
 
     @Restricted(NoExternalUse.class)
-    public static boolean USE_PERCENT_LOAD = false;
+    public static boolean USE_PERCENT_LOAD = Boolean.getBoolean(LeastLoadBalancer.class.getName() + ".USE_PERCENT_LOAD");
 
     private static final Comparator<ExecutorChunk> EXECUTOR_CHUNK_COMPARATOR = Collections.reverseOrder(new ExecutorChunkComparator());
 

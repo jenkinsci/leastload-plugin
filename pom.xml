@@ -38,6 +38,11 @@
 	  <tag>HEAD</tag>
   </scm>
 
+	<properties>
+		<spotbugs.effort>Max</spotbugs.effort>
+		<spotbugs.threshold>Low</spotbugs.threshold>
+	</properties>
+
 	<repositories>
 		<repository>
 			<id>repo.jenkins-ci.org</id>

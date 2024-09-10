@@ -24,6 +24,9 @@
 package org.bstick12.jenkinsci.plugins.leastload;
 
 import com.google.common.base.Preconditions;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.init.Initializer;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Job;
@@ -40,6 +43,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
@@ -56,7 +60,7 @@ import static java.util.logging.Level.WARNING;
  */
 public class LeastLoadBalancer extends LoadBalancer {
 
-    private static final Logger LOGGER = Logger.getLogger(LeastLoadBalancer.class.getCanonicalName());
+    private static final Logger LOGGER = Logger.getLogger(LeastLoadBalancer.class.getName());
 
     private static final Comparator<ExecutorChunk> EXECUTOR_CHUNK_COMPARATOR = Collections.reverseOrder(new ExecutorChunkComparator());
 
@@ -74,7 +78,8 @@ public class LeastLoadBalancer extends LoadBalancer {
     }
 
     @Override
-    public Mapping map(Task task, MappingWorksheet ws) {
+    @CheckForNull
+    public Mapping map(@NonNull Task task, MappingWorksheet ws) {
 
         try {
 
@@ -172,6 +177,7 @@ public class LeastLoadBalancer extends LoadBalancer {
     }
 
     protected static class ExecutorChunkComparator implements Comparator<ExecutorChunk>, Serializable {
+        private static final long serialVersionUID = 1L;
 
         public int compare(ExecutorChunk ec1, ExecutorChunk ec2) {
 
@@ -198,6 +204,12 @@ public class LeastLoadBalancer extends LoadBalancer {
             return computer.countBusy() == 0;
         }
 
+    }
+
+    @Initializer
+    public static void register() {
+        var queue = Jenkins.get().getQueue();
+        queue.setLoadBalancer(new LeastLoadBalancer(queue.getLoadBalancer()));
     }
 
 }

@@ -11,7 +11,6 @@ import hudson.model.FreeStyleProject;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -28,11 +27,6 @@ public class LeastLoadIntegrationTest {
     @Rule public JenkinsRule j = new JenkinsRule();
 
     @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @Before
-    public void before() throws Exception {
-        new LeastLoadPlugin().start();
-    }
 
     @Test
     public void smokes() throws Exception {

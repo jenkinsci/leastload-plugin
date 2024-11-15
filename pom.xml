@@ -4,7 +4,8 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>4.1</version>
+		<version>4.88</version>
+		<relativePath />
 	</parent>
 
 	<artifactId>leastload</artifactId>
@@ -50,11 +51,6 @@
 			<url>https://repo.jenkins-ci.org/public/</url>
 		</pluginRepository>
 	</pluginRepositories>
-
-	<properties>
-		<jenkins.version>2.164.3</jenkins.version>
-		<java.level>8</java.level>
-	</properties>
 
 	<dependencies>
 		<dependency>

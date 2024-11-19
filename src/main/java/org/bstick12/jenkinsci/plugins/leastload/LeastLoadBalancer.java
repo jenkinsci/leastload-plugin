@@ -24,6 +24,7 @@
 package org.bstick12.jenkinsci.plugins.leastload;
 
 import com.google.common.base.Preconditions;
+import hudson.init.Initializer;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Job;
@@ -40,6 +41,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
@@ -71,6 +73,12 @@ public class LeastLoadBalancer extends LoadBalancer {
     public LeastLoadBalancer(LoadBalancer fallback) {
         Preconditions.checkNotNull(fallback, "You must provide a fallback implementation of the LoadBalancer");
         this.fallback = fallback;
+    }
+
+    @Initializer
+    public static void register() {
+        var queue = Jenkins.get().getQueue();
+        queue.setLoadBalancer(new LeastLoadBalancer(queue.getLoadBalancer()));
     }
 
     @Override

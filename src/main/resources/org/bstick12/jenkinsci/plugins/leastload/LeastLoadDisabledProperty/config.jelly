@@ -2,7 +2,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
                               xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
-  <f:optionalBlock name="leastLoadDisabled" title="Use default Jenkins load balancer" checked="${instance.leastLoadDisabled}" 
-  	inline="true" help="/descriptor/org.bstick12.jenkinsci.plugins.leastload.LeastLoadDisabledProperty/help/leastLoadDisabled"/>
-                                                 
+  <f:optionalBlock name="leastLoadDisabled" title="Use default Jenkins load balancer" checked="${instance.leastLoadDisabled}"
+      inline="true" help="/descriptor/org.bstick12.jenkinsci.plugins.leastload.LeastLoadDisabledProperty/help/leastLoadDisabled"/>
+
 </j:jelly>

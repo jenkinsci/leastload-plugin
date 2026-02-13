@@ -26,11 +26,13 @@ package org.bstick12.jenkinsci.plugins.leastload;
 import com.google.common.base.Preconditions;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.init.Initializer;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Job;
 import hudson.model.LoadBalancer;
+import hudson.model.Node;
 import hudson.model.Queue.Task;
 import hudson.model.queue.MappingWorksheet;
 import hudson.model.queue.MappingWorksheet.ExecutorChunk;
@@ -79,6 +81,7 @@ public class LeastLoadBalancer extends LoadBalancer {
      * When empty, we refresh from Jenkins (nodes that are online, accepting tasks, with idle executors).
      * Access only under Queue lock (map() is serialized by the caller).
      */
+    @SuppressFBWarnings(value = "MS_MUTABLE_COLLECTION", justification = "Access only under Queue lock (map() is serialized by the caller); not exposed")
     private final Set<String> availableNodeNamesThisRound = new HashSet<>();
 
     /**
@@ -175,15 +178,12 @@ public class LeastLoadBalancer extends LoadBalancer {
      */
     private void refreshAvailableNodes() {
         availableNodeNamesThisRound.clear();
-        Jenkins j = Jenkins.get();
-        if (j == null) {
-            return;
-        }
-        for (Computer c : j.getComputers()) {
-            if (c.getNode() == null || c.isOffline() || !c.isAcceptingTasks() || c.countIdle() <= 0) {
+        for (Computer c : Jenkins.get().getComputers()) {
+            Node node = c.getNode();
+            if (node == null || c.isOffline() || !c.isAcceptingTasks() || c.countIdle() <= 0) {
                 continue;
             }
-            availableNodeNamesThisRound.add(c.getNode().getNodeName());
+            availableNodeNamesThisRound.add(node.getNodeName());
         }
         LOGGER.log(FINER, "Least load balancer refreshed available nodes: {0} nodes", availableNodeNamesThisRound.size());
     }
@@ -316,7 +316,7 @@ public class LeastLoadBalancer extends LoadBalancer {
             } else if (isIdle(com2) && !isIdle(com1)) {
                 return -1;
             } else {
-                return com1.countIdle() - com2.countIdle();
+                return Integer.compare(com1.countIdle(), com2.countIdle());
             }
 
         }

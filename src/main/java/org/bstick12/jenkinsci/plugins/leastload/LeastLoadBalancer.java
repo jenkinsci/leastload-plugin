@@ -40,12 +40,10 @@ import hudson.model.queue.MappingWorksheet;
 import hudson.model.queue.MappingWorksheet.ExecutorChunk;
 import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.model.queue.MappingWorksheet.WorkChunk;
-import hudson.model.queue.LoadPredictor;
 import hudson.model.queue.SubTask;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -121,15 +119,6 @@ public class LeastLoadBalancer extends LoadBalancer {
     public static void register() {
         var queue = Jenkins.get().getQueue();
         queue.setLoadBalancer(new LeastLoadBalancer(queue.getLoadBalancer()));
-    }
-
-    /**
-     * When running with a Jenkins core that uses {@link LoadBalancer#getLoadPredictors()}, return no predictors
-     * so that MappingWorksheet skips load prediction. If the core does not define this method, this is just an
-     * additional method on the balancer and is never called.
-     */
-    public Collection<LoadPredictor> getLoadPredictors() {
-        return Collections.emptyList();
     }
 
     @Override

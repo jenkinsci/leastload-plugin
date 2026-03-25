@@ -24,6 +24,7 @@
 package org.bstick12.jenkinsci.plugins.leastload;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import hudson.model.LoadBalancer;
 import hudson.model.AbstractProject;
 import hudson.model.Queue.Task;
@@ -59,34 +60,32 @@ public class LeastLoadBalancerTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testFallbackOnFailure() {
+    public void testNullOnFailure() {
         LeastLoadBalancer llb = new LeastLoadBalancer(mockFallback);
         LeastLoadDisabledProperty lldp = new LeastLoadDisabledProperty(false);
+        Mockito.doReturn(mockAbstractProject).when(mockAbstractProject).getOwnerTask();
         Mockito.doReturn(lldp).when(mockAbstractProject).getProperty(LeastLoadDisabledProperty.class);
-        llb.map(mockAbstractProject, mockMappingWorksheet);
-        Mockito.verify(mockFallback).map(mockAbstractProject, mockMappingWorksheet);
+        assertNull(llb.map(mockAbstractProject, mockMappingWorksheet));
+        Mockito.verify(mockFallback, Mockito.never()).map(Mockito.any(), Mockito.any());
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testFallbackOnPropertyDisable() {
-
         LeastLoadBalancer llb = new LeastLoadBalancer(mockFallback);
         LeastLoadDisabledProperty lldp = new LeastLoadDisabledProperty(true);
+        Mockito.doReturn(mockAbstractProject).when(mockAbstractProject).getOwnerTask();
         Mockito.doReturn(lldp).when(mockAbstractProject).getProperty(LeastLoadDisabledProperty.class);
         llb.map(mockAbstractProject, mockMappingWorksheet);
         Mockito.verify(mockFallback).map(mockAbstractProject, mockMappingWorksheet);
-
     }
 
     @Test
-    public void testFallbackWhenNotAbstractProject() {
-
+    public void testNullWhenNotAbstractProject() {
         LeastLoadBalancer llb = new LeastLoadBalancer(mockFallback);
         Task mockTask = Mockito.mock(Task.class);
-        llb.map(mockTask, mockMappingWorksheet);
-        Mockito.verify(mockFallback).map(mockTask, mockMappingWorksheet);
-
+        assertNull(llb.map(mockTask, mockMappingWorksheet));
+        Mockito.verify(mockFallback, Mockito.never()).map(Mockito.any(), Mockito.any());
     }
 
 }

@@ -57,8 +57,6 @@ import jenkins.model.Jenkins;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
-import static java.util.logging.Level.WARNING;
-
 /**
  * A {@link LoadBalancer} implementation that the leastload plugin uses to replace the default
  * Jenkins {@link LoadBalancer}
@@ -127,74 +125,63 @@ public class LeastLoadBalancer extends LoadBalancer {
         long startNanos = System.nanoTime();
         String trace_id = String.format("%08x", (int) (System.nanoTime() & 0xFFFFFFFF));
 
-        try {
+        if (!isDisabled(task)) {
 
-            if (!isDisabled(task)) {
-
-                if (availableNodesThisRound.isEmpty()) {
-                    refreshAvailableNodes(trace_id);
-                } else if (isLabelSetEmptyForTask(ws)) {
-                    refreshAvailableNodes(trace_id);
-                }
-
-                List<ExecutorChunk> useableChunks = getApplicableSortedByLoad(ws);
-                Set<String> nodeNamesForFilter = getNodeNamesForFilter(ws);
-                List<ExecutorChunk> chunksForThisRound = filterToAvailableNodesThisRound(useableChunks, nodeNamesForFilter);
-
-                if (chunksForThisRound.isEmpty()) {
-                    refreshAvailableNodes(trace_id);
-                    nodeNamesForFilter = getNodeNamesForFilter(ws);
-                    chunksForThisRound = filterToAvailableNodesThisRound(useableChunks, nodeNamesForFilter);
-                }
-                if (chunksForThisRound.isEmpty() && !useableChunks.isEmpty() && isLabelRestrictedWork(ws)) {
-                    // For label-restricted work, use useableChunks directly when round-robin filtered to empty.
-                    // Worksheet chunks are only for currently idle executors, so we cannot double-assign.
-                    // This fixes long delays when a single node has the required label and multiple executors.
-                    Set<String> availableNames = availableNodesThisRound.keySet();
-                    boolean anyStillAvailable = false;
-                    for (ExecutorChunk ec : useableChunks) {
-                        if (ec.node != null && availableNames.contains(ec.node.getNodeName())) {
-                            anyStillAvailable = true;
-                            break;
-                        }
-                    }
-                    if (anyStillAvailable) {
-                        chunksForThisRound = filterToAvailableNodesThisRound(useableChunks, availableNames);
-                        LOGGER.log(FINER, tracePrefix(trace_id) + "Least load balancer: immediate assign for label-restricted work (using matching nodes still available this round)");
-                    } else {
-                        chunksForThisRound = useableChunks;
-                        LOGGER.log(FINER, tracePrefix(trace_id) + "Least load balancer: immediate assign for label-restricted work (using all useable chunks; nodes already used this round but have idle executors)");
-                    }
-                }
-                if (chunksForThisRound.isEmpty()) {
-                    logMappingFailureDiagnostics(ws, useableChunks.size(), true, trace_id);
-                    logMapDuration(startNanos, "null (no chunks for this round)", trace_id);
-                    return null;
-                }
-
-                Mapping m = ws.new Mapping();
-                if (assignGreedily(m, chunksForThisRound, 0)) {
-                    assert m.isCompletelyValid();
-                    markNodesUsed(m);
-                    logMapDuration(startNanos, "mapped", trace_id);
-                    return m;
-                } else {
-                    logMappingFailureDiagnostics(ws, useableChunks.size(), false, trace_id);
-                    LOGGER.log(FINE, tracePrefix(trace_id) + "Least load balancer was unable to define mapping. chunksForThisRound={0}", chunksForThisRound.size());
-                    logMapDuration(startNanos, "null (assignGreedily failed)", trace_id);
-                    return null;
-                }
-
-            } else {
-                Mapping result = getFallBackLoadBalancer().map(task, ws);
-                logMapDuration(startNanos, "fallback -> " + (result != null ? "mapped" : "null"), trace_id);
-                return result;
+            if (availableNodesThisRound.isEmpty()) {
+                refreshAvailableNodes(trace_id);
+            } else if (isLabelSetEmptyForTask(ws)) {
+                refreshAvailableNodes(trace_id);
             }
 
-        } catch (Exception e) {
-            LOGGER.log(WARNING, tracePrefix(trace_id) + "Least load balancer failed", e);
-            logMapDuration(startNanos, "null (exception)", trace_id);
-            return null;
+            List<ExecutorChunk> useableChunks = getApplicableSortedByLoad(ws);
+            Set<String> nodeNamesForFilter = getNodeNamesForFilter(ws);
+            List<ExecutorChunk> chunksForThisRound = filterToAvailableNodesThisRound(useableChunks, nodeNamesForFilter);
+
+            if (chunksForThisRound.isEmpty()) {
+                refreshAvailableNodes(trace_id);
+                nodeNamesForFilter = getNodeNamesForFilter(ws);
+                chunksForThisRound = filterToAvailableNodesThisRound(useableChunks, nodeNamesForFilter);
+            }
+            if (chunksForThisRound.isEmpty() && !useableChunks.isEmpty() && isLabelRestrictedWork(ws)) {
+                Set<String> availableNames = availableNodesThisRound.keySet();
+                boolean anyStillAvailable = false;
+                for (ExecutorChunk ec : useableChunks) {
+                    if (ec.node != null && availableNames.contains(ec.node.getNodeName())) {
+                        anyStillAvailable = true;
+                        break;
+                    }
+                }
+                if (anyStillAvailable) {
+                    chunksForThisRound = filterToAvailableNodesThisRound(useableChunks, availableNames);
+                    LOGGER.log(FINER, tracePrefix(trace_id) + "Least load balancer: immediate assign for label-restricted work (using matching nodes still available this round)");
+                } else {
+                    chunksForThisRound = useableChunks;
+                    LOGGER.log(FINER, tracePrefix(trace_id) + "Least load balancer: immediate assign for label-restricted work (using all useable chunks; nodes already used this round but have idle executors)");
+                }
+            }
+            if (chunksForThisRound.isEmpty()) {
+                logMappingFailureDiagnostics(ws, useableChunks.size(), true, trace_id);
+                logMapDuration(startNanos, "null (no chunks for this round)", trace_id);
+                return null;
+            }
+
+            Mapping m = ws.new Mapping();
+            if (assignGreedily(m, chunksForThisRound, 0)) {
+                assert m.isCompletelyValid();
+                markNodesUsed(m);
+                logMapDuration(startNanos, "mapped", trace_id);
+                return m;
+            } else {
+                logMappingFailureDiagnostics(ws, useableChunks.size(), false, trace_id);
+                LOGGER.log(FINE, tracePrefix(trace_id) + "Least load balancer was unable to define mapping. chunksForThisRound={0}", chunksForThisRound.size());
+                logMapDuration(startNanos, "null (assignGreedily failed)", trace_id);
+                return null;
+            }
+
+        } else {
+            Mapping result = getFallBackLoadBalancer().map(task, ws);
+            logMapDuration(startNanos, "fallback -> " + (result != null ? "mapped" : "null"), trace_id);
+            return result;
         }
     }
 

@@ -12,9 +12,6 @@ being left idle while other nodes are overloaded. This plugin overrides the defa
 to nodes with the least load. The least load is defined as a node that is idle or the one with the most available
 executors.
 
-It is intended to provide the same functionality as the commercial [Even Scheduler
-Plugin](https://docs.cloudbees.com/docs/admin-resources/latest/plugins/even-scheduler).
-
 ## Configuration
 
 The plugin requires no global configuration. It will simply replace the default load balancer at startup. Jobs can
